@@ -1,12 +1,59 @@
 Copyright (c) 2026 Cognit Consulting AB (trading as AmpliFlow). All rights reserved.
 
-This software is provided "as is", without warranty of any kind, express or
-implied, including but not limited to the warranties of merchantability,
-fitness for a particular purpose, and noninfringement. In no event shall
-Cognit Consulting AB be liable for any claim, damages, or other liability,
-whether in an action of contract, tort, or otherwise, arising from, out of,
-or in connection with the software or the use or other dealings in the software.
+PROPRIETARY SOFTWARE LICENSE
 
-You may use, run, and distribute this software in binary form. You may not
-modify, sublicense, sell, or create derivative works from the source code.
-Cognit Consulting AB retains all intellectual property rights.
+This software and all associated documentation ("Software") are the exclusive
+property of Cognit Consulting AB ("Licensor"). All intellectual property rights
+in the Software are retained by Licensor.
+
+1. GRANT OF LICENSE
+
+   Licensor grants you a limited, non-exclusive, non-transferable,
+   non-sublicensable license to download, install, and run the Software in
+   binary form solely for your own internal business purposes.
+
+2. RESTRICTIONS
+
+   You may not, and may not permit any third party to:
+
+   a) copy, distribute, resell, sublicense, rent, lease, or otherwise transfer
+      the Software or any rights in it to any third party;
+
+   b) modify, adapt, translate, or create derivative works based on the Software;
+
+   c) reverse-engineer, disassemble, decompile, or otherwise attempt to derive
+      the source code, algorithms, or structure of the Software;
+
+   d) remove, alter, or obscure any copyright, trademark, or other proprietary
+      notices in or on the Software;
+
+   e) use the Software to build a competing product or service.
+
+   Any use not expressly permitted by this license requires a separate written
+   commercial agreement with Licensor.
+
+3. TERMINATION
+
+   This license is effective until terminated. It terminates automatically,
+   without notice, if you breach any term of this license. Upon termination
+   you must immediately cease all use of the Software and destroy all copies
+   in your possession.
+
+4. DISCLAIMER OF WARRANTIES
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+5. LIMITATION OF LIABILITY
+
+   IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+   FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+6. GOVERNING LAW
+
+   This license is governed by the laws of Sweden. Any dispute arising out of
+   or in connection with this license shall be subject to the exclusive
+   jurisdiction of the courts of Stockholm, Sweden.
