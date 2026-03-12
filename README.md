@@ -2,8 +2,6 @@
 
 A CLI for AmpliFlow. Built for LLM agents. Works for humans too.
 
-[![Watch: af-cli with agentic AI for risk and project management](https://img.youtube.com/vi/cBB4xiK1keg/maxresdefault.jpg)](https://youtu.be/cBB4xiK1keg)
-
 > [!CAUTION]
 > **This tool is dangerous.** It allows AI agents to take actions in your AmpliFlow tenant without human approval of each step. Data will be created, modified, and deleted on your behalf. Mistakes will be logged as yours. Do not use this in production until you have read and understood every warning below.
 
