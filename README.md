@@ -123,25 +123,13 @@ The [stopsloppypasta.ai](https://stopsloppypasta.ai/) guidelines describe the co
 
 ## Install
 
-Download the binary for your platform from [Releases](https://github.com/AmpliFlow/af-cli/releases/latest).
-
-**Linux (amd64):**
 ```bash
-curl -L https://github.com/AmpliFlow/af-cli/releases/latest/download/af-linux-amd64 -o /usr/local/bin/af
-chmod +x /usr/local/bin/af
+curl -fsSL https://raw.githubusercontent.com/AmpliFlow/af-cli/main/scripts/install.sh | bash
 ```
 
-**macOS (Apple Silicon):**
-```bash
-curl -L https://github.com/AmpliFlow/af-cli/releases/latest/download/af-darwin-arm64 -o /usr/local/bin/af
-chmod +x /usr/local/bin/af
-```
+Detects your platform, downloads the latest binary to `~/.local/bin/af`, and prints next steps. To install to a different location: `AF_BIN_DIR=/usr/local/bin curl -fsSL ... | bash`.
 
-**macOS (Intel):**
-```bash
-curl -L https://github.com/AmpliFlow/af-cli/releases/latest/download/af-darwin-amd64 -o /usr/local/bin/af
-chmod +x /usr/local/bin/af
-```
+Or download a specific binary directly from [Releases](https://github.com/AmpliFlow/af-cli/releases/latest).
 
 ## Quick Start
 
