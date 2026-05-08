@@ -127,9 +127,29 @@ The [stopsloppypasta.ai](https://stopsloppypasta.ai/) guidelines describe the co
 curl -fsSL https://raw.githubusercontent.com/AmpliFlow/af-cli/main/scripts/install.sh | bash
 ```
 
-Detects your platform, downloads the latest binary to `~/.local/bin/af`, and prints next steps. To install to a different location: `AF_BIN_DIR=/usr/local/bin curl -fsSL ... | bash`.
+The installer detects your platform, downloads the latest binary to `~/.local/bin/af`, and prints next steps.
 
-Or download a specific binary directly from [Releases](https://github.com/AmpliFlow/af-cli/releases/latest).
+Install somewhere else:
+
+```bash
+AF_BIN_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/AmpliFlow/af-cli/main/scripts/install.sh | bash
+```
+
+Install a specific version:
+
+```bash
+AF_VERSION=v1.23.50 curl -fsSL https://raw.githubusercontent.com/AmpliFlow/af-cli/main/scripts/install.sh | bash
+```
+
+Or download a binary directly from [Releases](https://github.com/AmpliFlow/af-cli/releases/latest).
+
+Update later:
+
+```bash
+af update
+```
+
+Run setup again after updates when you want to refresh the agent guidance files.
 
 ## Quick Start
 
@@ -137,11 +157,24 @@ Or download a specific binary directly from [Releases](https://github.com/AmpliF
 # Authenticate (run once per tenant)
 af auth login
 
-# See your projects
+# See your projects and bind this checkout to one of them
 af project list
+af context project <project-ref>
 
 # Get workflow context (agents: run this first)
 af prime
+
+# See ready work in the bound project
+af ready
+```
+
+Set up agent guidance for your tool:
+
+```bash
+af setup claude     # ~/.claude/skills/af-cli/
+af setup opencode   # ~/.config/opencode/skills/af-cli/
+af setup pi         # ~/.pi/agent/
+af setup local      # repo-local CLAUDE.md, GEMINI.md, AGENTS.md
 ```
 
 ## What it does
@@ -171,26 +204,112 @@ af human
 # Get workflow context
 af prime
 
-# Find ready tasks
+# Find ready tasks in the bound project
 af ready
 
 # Claim and work a task
 af project 3 task 12 assign --me
-af project 3 task 12 comment "WIP: investigating the bug"
+af project 3 task 12 update --log "Starting. Plan: reproduce, inspect, fix, test."
 af project 3 task 12 complete
 ```
 
-`af` ships with a skill file for Claude and OpenCode agents. After install:
+Task tag mutation is project-scoped:
+
 ```bash
-af setup claude     # installs skill to ~/.claude/skills/af-cli/
-af setup opencode   # installs skill to ~/.config/opencode/skills/af-cli/
+af project 3 task 12 tag add loop
+af project 3 task 12 tag list
+af ready --tag loop
+af loop --tag loop
 ```
+
+Use tags when you want a bounded automation queue. `--tag` is a positive filter. Normal ready checks still apply: blockers, local deferred or in-progress state, future start dates, and ignore-tags.
+
+## Running task loops
+
+`af loop` is an operator-supervised dispatcher for agent work. A human starts it from a project checkout. Agents should not start nested loops.
+
+```bash
+af context project <project-ref>
+af loop
+```
+
+The loop polls the ready queue, claims work, starts the selected coding harness, checks that the task was actually completed, records retry context, and moves on. It is useful for draining well-scoped work. It is not permission to run unreviewed production changes.
+
+Choose a harness for one run:
+
+```bash
+af loop --harness opencode
+af loop --harness claude
+af loop --harness pi
+af loop --model openai/gpt-5.5
+```
+
+Follow the operator log:
+
+```bash
+af loop tail
+af loop logs --lines 500
+af loop logs --full
+af loop logs --level warning
+```
+
+### Milestone coordinator mode
+
+When ready work belongs to a milestone, `af loop` can run a milestone coordinator. The coordinator gets the ready sibling tasks, chooses a safe batch, and claims only the tasks it will work. Same-surface or uncertain tasks stay serial. Independent tasks may run in the same pass.
+
+That word `safe` is doing real work here. The loop is conservative by design.
+
+### Configure loop defaults
+
+Harness and model resolution order:
+
+1. explicit `af loop --harness` or `--model` flags
+2. repo-local project defaults in `.af/config`
+3. machine-wide defaults in the af config store
+4. built-in defaults
+
+```bash
+af config global harness pi
+af config global model openai/gpt-5.5
+af config global show
+
+af config project harness claude
+af config project model openai/gpt-5.5
+af config project show
+```
+
+Model values must be provider-qualified, for example `openai/gpt-5.5`. Bare names such as `gpt-5.5` are rejected so the provider cannot change silently.
+
+Project defaults live in this checkout's `.af/config`. Treat them as local operator preference, not shared team policy.
+
+### Ready queue ignore tags
+
+By default, `af ready`, `af loop`, and `af priority` ignore tasks tagged `#deferred` or `#blocked`.
+
+Change that globally for this machine or locally for the current checkout:
+
+```bash
+af config global ignore-tags "#deferred,#blocked,#manual"
+af config project ignore-tags "#needs-human,#manual"
+
+af config global unset ignore-tags
+af config project unset ignore-tags
+```
+
+Precedence is:
+
+1. repo-local project `ignore-tags`
+2. machine-wide global `ignore-tags`
+3. built-in default `#deferred,#blocked`
+
+Set `ignore-tags` to an empty string only when you intentionally want no tag-based hiding. `ignore-tags` filters the ready queue only. It does not delete tasks, change server-side tags, or mark tasks complete.
 
 ## Design
 
 - **Refs, not UUIDs.** Every entity maps to a short integer. `af project 3 task 12` instead of 36-character UUIDs.
 - **AI-generated content marked by default.** Every write includes `> Generated by AI via af-cli on behalf of <email>`. The EU AI Act requires transparency; the tool enforces it. Removing the banner is a manual step done by a human in the web UI after reviewing the content.
 - **Local SQLite for cache only.** AmpliFlow is the source of truth. Local state is a cache, never authoritative.
+- **Local operator defaults stay local.** Machine-wide defaults live in the local af config store. Repo-local loop defaults and ready ignore-tags live in `.af/config` for the current checkout. They control local dispatch behavior and should not be treated as shared project policy.
 
 ## License
 
