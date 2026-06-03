@@ -10,7 +10,7 @@ If you are new to AmpliFlow, start with [ampliflow.com](https://www.ampliflow.co
 
 - AmpliFlow operators who want a faster terminal workflow
 - Coding-agent operators who want agents to work from the same tasks and records as the rest of the team
-- Admin and security reviewers who need to understand the auth, write, and data-handling model before rollout
+- Teams piloting AI-assisted work inside AmpliFlow and needing a controlled way to connect agents to live business records
 
 ## What is AmpliFlow?
 
