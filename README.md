@@ -2,7 +2,7 @@
 
 `af` is the AmpliFlow CLI for terminals, scripts, and AI agents.
 
-Use it to work with live AmpliFlow data from a shell, bind a repo checkout to a project, and run agent workflows with `af prime`, `af ready`, and `af loop`.
+Use it to work with live AmpliFlow data from a shell, bind a repo checkout to an AmpliFlow project, run agent workflows with `af prime`, `af ready`, and `af loop`, and install shared agent guidance with `af setup`.
 
 ## Who it is for
 
@@ -16,7 +16,7 @@ Use it to work with live AmpliFlow data from a shell, bind a repo checkout to a 
 
 - Projects and tasks: list projects, bind a checkout to a project, browse tasks, assign work, post comments, append Agent Log entries, and work with project files and discussions
 - Management-system records: browse and update risks, improvements, goals, pages, controls, legislation, customer requirements, training plans, environmental aspects, processes, custom lists, checklists, news, and history
-- Business records: work suppliers, stakeholders, customers, and items
+- Business records: work with suppliers, stakeholders, customers, and items
 - Search and reporting: search across records, inspect priorities, read ready work, and add task-linked timesheet entries
 - Agent setup and context: configure repo context, install shared agent guidance with `af setup`, and stamp AI git commits with `af git-identity -E`
 
@@ -29,6 +29,7 @@ Install the latest public CLI release:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/AmpliFlow/af-cli/main/scripts/install.sh | bash
+af version
 ```
 
 The installer detects your platform, downloads the `af` binary from `AmpliFlow/af-cli` releases, verifies `checksums.txt`, and installs to `~/.local/bin/af` by default.
@@ -51,54 +52,241 @@ Update later:
 
 ```bash
 af update
+af update --force
 ```
+
+`af update` verifies release checksums before replacing the binary. No-op update runs still refresh the embedded shared agent guidance files from the installed binary.
 
 The public release installs the `af` CLI only. It does not install `af-mcp`.
 
-## Quick start for humans
+## Quick start
 
-Authenticate once per tenant, then bind the project you want to work in.
+Authenticate once per tenant, then bind the right identity and project in the repo where you work.
 
 ```bash
+# Add an AmpliFlow tenant and authenticate
 af auth login
+
+# See available identities and projects
+af auth list
 af project list
+
+# Bind identity and project for this repo+branch
+af context auth <ref>
 af context project <project-ref>
+
+# Show the current binding and load the workflow card
+af context
+af me
 af prime
-af human
 ```
 
-A simple read-first workflow looks like this:
+If a token expires, refresh it without re-entering tenant and email:
+
+```bash
+af auth reauth
+#af auth reauth <ref>
+```
+
+If you need to switch the active tenant for this repo+branch:
+
+```bash
+af tenant switch <slug>
+```
+
+## Configuration
+
+`af` has three main user configuration surfaces:
+
+1. Repo+branch context
+2. Machine-wide defaults
+3. Repo-local defaults for the current checkout
+
+For a full view of stored and known keys, run:
+
+```bash
+af config show
+```
+
+### Repo+branch context
+
+Use `af context` to bind the current repo+branch to an identity and project.
 
 ```bash
 af context
+af context auth <ref>
+af context project <project-ref>
+af context demo-mode on
+af context demo-mode off
+```
+
+Use `af me` to verify the active user UUID and tenant behind `--me` flows.
+
+### Machine-wide defaults
+
+Use `af config global` for defaults that should apply on this machine across repos.
+
+```bash
+af config global harness <opencode|claude|pi>
+af config global model <provider/model>
+af config global timelog <true|false>
+af config global ignore-tags "#deferred,#blocked,#manual"
+
+af config global show
+af config global unset harness
+af config global unset model
+af config global unset timelog
+af config global unset ignore-tags
+```
+
+### Repo-local defaults
+
+Use `af config project` for defaults that should apply only in the current checkout.
+
+```bash
+af config project harness <opencode|claude|pi>
+af config project model <provider/model>
+af config project timelog <true|false>
+af config project ignore-tags "#needs-human"
+
+af config project show
+af config project unset harness
+af config project unset model
+af config project unset timelog
+af config project unset ignore-tags
+```
+
+Project defaults live in `.af/config`. They are repo-local behavior and are not shared through Git.
+
+### Advanced config
+
+Use the low-level key-value commands only when you need direct control.
+
+```bash
+af config get <key>
+af config set <key> <value>
+af config delete <key>
+```
+
+The main advanced key users sometimes set manually is `agent.user-id`, usually to recover `--me` workflows when the tenant has more than one published user:
+
+```bash
+af who
+af config set agent.user-id <uuid>
+```
+
+If exactly one published user exists on the active tenant, `af me`, `af ready --me`, and `assign --me` can recover that UUID automatically.
+
+### Precedence and built-in defaults
+
+Loop and ready behavior resolve in this order:
+
+1. Explicit command flags
+2. Repo-local project defaults in `.af/config`
+3. Machine-wide global defaults
+4. Built-in defaults
+
+Built-in defaults:
+
+- loop harness: `opencode`
+- loop model: harness-specific
+- loop timelog: `false`
+- ready ignore-tags: `#deferred,#blocked`
+
+The same ignore-tags setting is used by `af ready`, `af priority`, and `af loop`.
+
+Explicit and configured loop models must be provider-qualified, for example `openai/gpt-5.5` or `openai-codex/gpt-5.4`.
+
+### Non-interactive auth
+
+`af` also supports env-backed auth for scripts and non-interactive use with `AF_BASE_URL` and `AF_TOKEN`.
+
+In that mode, commands like `af auth status`, `af tenant active`, and `af config show` use the env-provided tenant context.
+
+## Common workflows
+
+### Daily CLI workflow
+
+```bash
+# Show the current project and identity context
+af context
+af me
+
+# See ready work
 af ready
 af priority
+
+# See all open project tasks
 af project <project-ref> task list
-af risk list
-af search "supplier risk"
-```
 
-## Quick start for agents
-
-Install the shared af guidance into the agent you use:
-
-```bash
-af setup claude
-# or
-af setup opencode
-# or
-af setup pi
-```
-
-Then start work from a repo checkout that is bound to an AmpliFlow project:
-
-```bash
-af prime
-af ready
+# Work a task
 af project <project-ref> task <task-ref> assign --me
 af project <project-ref> task <task-ref> update --log "Starting. Plan: reproduce, inspect, fix, test."
 af project <project-ref> task <task-ref> complete
 ```
+
+### Loop automation
+
+`af loop` is an operator-supervised dispatcher for ready tasks. It requires a bound project, claims the first ready task, launches the selected coding harness, and keeps that claimed task active across retries until it is completed or blocked.
+
+```bash
+af context project <project-ref>
+af loop
+
+# Append task-linked timesheet entries for completed loop runs
+af loop --timelog
+
+# Restrict the queue to tasks with a specific tag
+af project <project-ref> task <task-ref> tag add loop
+af ready --tag loop
+af loop --tag loop
+
+# Override the configured harness or model for one run
+af loop --harness opencode
+af loop --harness claude
+af loop --harness pi
+af loop --model openai/gpt-5.5
+
+# Run one queue pass, then exit
+af loop --once
+
+# Add local operator guidance for the next run
+af loop steer "rerun the focused loop tests"
+
+# Follow the operator log
+af loop tail
+af loop logs --lines 500
+af loop logs --level warning
+```
+
+If you are integrating a custom loop-driven agent flow, the spawned agent is expected to finish with one final outcome marker line such as:
+
+- `AF_LOOP_OUTCOME: COMPLETE <reason>`
+- `AF_LOOP_OUTCOME: CONTINUE <reason>`
+- `AF_LOOP_OUTCOME: BLOCKED <reason>`
+- `AF_LOOP_OUTCOME: REPLAN <reason>`
+
+Agents inside a loop should not start nested loops.
+
+More detail: [AF loop guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/AF-LOOP.md)
+
+### Agent setup
+
+Use `af setup` to install the shared af workflow guidance into the agent you use:
+
+```bash
+af setup local
+af setup claude
+af setup opencode
+af setup pi
+```
+
+Highlights:
+
+- `af setup local` writes the af guidance block into repo-local instruction files.
+- `af setup opencode` also installs the opencode plugin.
+- `af setup pi` also installs the PI-native af context extension.
+- `af setup` output is idempotent and can be re-run safely.
 
 When the agent will commit code, set the AI git identity first:
 
@@ -106,49 +294,20 @@ When the agent will commit code, set the AI git identity first:
 eval "$(af git-identity -E)"
 ```
 
-## Running task loops
-
-`af loop` is an operator-supervised dispatcher for ready tasks. A human starts it from a project checkout. The loop claims work, starts the selected coding harness, checks that the task was actually completed, records retry context, and moves on.
+### Search and help
 
 ```bash
-af context project <project-ref>
-af loop
+af search "supplier risk"
+af human
+af --help
+af config --help
+af docs
+af docs quirks
+af docs --search pagination
+af usage
 ```
 
-Use a tag-gated queue when you want a bounded automation lane:
-
-```bash
-af project <project-ref> task <task-ref> tag add loop
-af ready --tag loop
-af loop --tag loop
-```
-
-Pick a harness or model for one run:
-
-```bash
-af loop --harness opencode
-af loop --harness claude
-af loop --harness pi
-af loop --model openai/gpt-5.5
-```
-
-Follow the operator log:
-
-```bash
-af loop tail
-af loop logs --lines 500
-af loop logs --level warning
-```
-
-Use goal mode when one claimed task should stay in focus across repeated attempts until it is complete or blocked:
-
-```bash
-af loop --goal --tag loop
-```
-
-Agents inside a loop should not start nested loops.
-
-More detail: [AF-LOOP.md](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/AF-LOOP.md)
+Use `af prime` when you want the short workflow card for the bound project. Use `af docs` when you want the embedded version-matched reference docs from the installed binary.
 
 ## MCP and the ChatGPT connector
 
