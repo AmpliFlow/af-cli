@@ -4,11 +4,19 @@
 
 Use it to work with live AmpliFlow data from a shell, bind a repo checkout to an AmpliFlow project, run agent workflows with `af prime`, `af ready`, and `af loop`, and install shared agent guidance with `af setup`.
 
+If you are new to AmpliFlow, start with [ampliflow.com](https://www.ampliflow.com). AmpliFlow is a platform for business governance that brings processes, goals, risks, projects, and documents into one platform. If you want the product page for this CLI specifically, see the [af-cli Labs page](https://www.ampliflow.com/labs/af-cli/).
+
 ## Who it is for
 
 - AmpliFlow operators who want a faster terminal workflow
 - Coding-agent operators who want agents to work from the same tasks and records as the rest of the team
 - Admin and security reviewers who need to understand the auth, write, and data-handling model before rollout
+
+## What is AmpliFlow?
+
+AmpliFlow is the product behind this CLI. The platform is built to help growing companies keep ownership, ways of working, goals, risks, projects, documents, and follow-up in one place instead of spreading governance across separate tools.
+
+That matters because `af` is not a generic task CLI. It is a command surface on top of live AmpliFlow data and workflows.
 
 ## What you can do
 
@@ -346,6 +354,8 @@ Agent-written AmpliFlow text is marked with an AI banner. Review it, rewrite it 
 
 ## Links
 
+- [AmpliFlow homepage](https://www.ampliflow.com)
+- [af-cli Labs page](https://www.ampliflow.com/labs/af-cli/)
 - [Releases](https://github.com/AmpliFlow/af-cli/releases)
 - [Source repo and development docs](https://github.com/AmpliFlow/af-cli-dev)
 - [AF loop guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/AF-LOOP.md)
