@@ -16,7 +16,7 @@ If you are new to AmpliFlow, start with [ampliflow.com](https://www.ampliflow.co
 
 AmpliFlow is the product behind this CLI. The platform is built to help growing companies keep ownership, ways of working, goals, risks, projects, documents, and follow-up in one place instead of spreading governance across separate tools.
 
-That matters because `af` is not a generic task CLI. It is a command surface on top of live AmpliFlow data and workflows.
+`af` is not a generic task CLI. It works against live AmpliFlow data and workflows.
 
 ## What you can do
 
@@ -83,6 +83,10 @@ af project list
 af context auth <ref>
 af context project <project-ref>
 
+# Install shared af guidance before agent work
+af setup local
+af setup pi      # or: af setup claude / af setup opencode
+
 # Show the current binding and load the workflow card
 af context
 af me
@@ -96,6 +100,8 @@ What each command does:
 - `af project list`: list projects visible to the active tenant identity.
 - `af context auth <ref>`: choose which stored identity this repo+branch should use.
 - `af context project <project-ref>`: bind this repo checkout to an AmpliFlow project. This is what makes `af prime`, `af ready`, and `af loop` operate in the right place.
+- `af setup local`: write the af guidance block into repo-local instruction files such as `AGENTS.md` or `CLAUDE.md`.
+- `af setup pi`, `af setup claude`, or `af setup opencode`: install the shared af guidance into the agent you use. Skip this if you only use `af` by hand.
 - `af context`: print the current repo+branch binding so you can check which identity and project are active.
 - `af me`: show the current user record behind `--me` flows, including user UUID and tenant.
 - `af prime`: print the short operator or agent workflow card for the bound project.
