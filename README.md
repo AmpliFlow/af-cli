@@ -427,12 +427,6 @@ What is true today:
 
 If you need the hosted MCP connection details, use the [integration guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/mcp-integration-guide.md). If you need source-level MCP work or self-hosted server changes, use the [source repo](https://github.com/AmpliFlow/af-cli-dev).
 
-### ChatGPT pilot package
-
-The [AmpliFlow pilot package](plugins/ampliflow/README.md) adds a read-only project-follow-up skill to a registered AmpliFlow app connection. Workspace admins can import this repository as a plugin marketplace. Access to the referenced app is required; customer workspaces need separate setup verification.
-
-The package leaves the CLI installer unchanged. It is separate from public directory submission.
-
 ## Design principles
 
 A few choices shape the tool:
