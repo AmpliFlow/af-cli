@@ -1,0 +1,20 @@
+{
+  "name": "ampliflow-pilot",
+  "interface": {
+    "displayName": "AmpliFlow pilot"
+  },
+  "plugins": [
+    {
+      "name": "ampliflow",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ampliflow"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
