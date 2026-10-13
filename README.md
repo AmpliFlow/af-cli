@@ -2,7 +2,7 @@
 
 `af` is the AmpliFlow CLI for terminals, scripts, and AI agents.
 
-Use it to work with live AmpliFlow data from a shell, bind a repo checkout to an AmpliFlow project, run agent workflows with `af prime`, `af ready`, and `af loop`, and install shared agent guidance with `af setup`.
+Use it to work with live AmpliFlow data from a shell, bind a repo checkout to an AmpliFlow project, run agent workflows with `af prime` and `af ready`, and install shared agent guidance with `af setup`.
 
 If you are new to AmpliFlow, start with [ampliflow.com](https://www.ampliflow.com). AmpliFlow is a platform for business governance that brings processes, goals, risks, projects, and documents into one platform. If you want the product page for this CLI specifically, see the [af-cli Labs page](https://www.ampliflow.com/labs/af-cli/).
 
@@ -99,7 +99,7 @@ What each command does:
 - `af auth list`: list stored identities and the ref numbers you use with `af context auth`.
 - `af project list`: list projects visible to the active tenant identity.
 - `af context auth <ref>`: choose which stored identity this repo+branch should use.
-- `af context project <project-ref>`: bind this repo checkout to an AmpliFlow project. This is what makes `af prime`, `af ready`, and `af loop` operate in the right place.
+- `af context project <project-ref>`: bind this repo checkout to an AmpliFlow project. This is what makes `af prime` and `af ready` operate in the right place.
 - `af setup local`: write the af guidance block into repo-local instruction files such as `AGENTS.md` or `CLAUDE.md`.
 - `af setup pi`, `af setup claude`, or `af setup opencode`: install the shared af guidance into the agent you use. Skip this if you only use `af` by hand.
 - `af context`: print the current repo+branch binding so you can check which identity and project are active.
@@ -165,24 +165,15 @@ Use `af me` to verify the active user UUID and tenant behind `--me` flows.
 Use `af config global` for defaults that should apply on this machine across repos.
 
 ```bash
-af config global harness <opencode|claude|pi>
-af config global model <provider/model>
-af config global timelog <true|false>
 af config global ignore-tags "#deferred,#blocked,#manual"
 
 af config global show
-af config global unset harness
-af config global unset model
-af config global unset timelog
 af config global unset ignore-tags
 ```
 
 What these do:
 
-- `af config global harness <opencode|claude|pi>`: pick the default coding harness for `af loop` on this machine.
-- `af config global model <provider/model>`: pick the default loop model on this machine. Models must stay provider-qualified.
-- `af config global timelog <true|false>`: decide whether `af loop` should append task-linked timesheet entries by default.
-- `af config global ignore-tags "..."`: define which task tags should be excluded by default from `af ready`, `af priority`, and `af loop`.
+- `af config global ignore-tags "..."`: define which task tags should be excluded by default from `af ready` and `af priority`.
 - `af config global show`: print the current machine-wide defaults.
 - `af config global unset ...`: remove one machine-wide default and fall back to lower-precedence config or built-in behavior.
 
@@ -191,23 +182,14 @@ What these do:
 Use `af config project` for defaults that should apply only in the current checkout.
 
 ```bash
-af config project harness <opencode|claude|pi>
-af config project model <provider/model>
-af config project timelog <true|false>
 af config project ignore-tags "#needs-human"
 
 af config project show
-af config project unset harness
-af config project unset model
-af config project unset timelog
 af config project unset ignore-tags
 ```
 
 What these do:
 
-- `af config project harness ...`: override the loop harness only in this checkout.
-- `af config project model ...`: override the loop model only in this checkout.
-- `af config project timelog ...`: turn loop timelogging on or off only in this checkout.
 - `af config project ignore-tags ...`: override the default hidden tags only in this checkout.
 - `af config project show`: print the repo-local defaults currently active in this checkout.
 - `af config project unset ...`: remove one repo-local default and fall back to global or built-in behavior.
@@ -244,7 +226,7 @@ If exactly one published user exists on the active tenant, `af me`, `af ready --
 
 ### Precedence and built-in defaults
 
-Loop and ready behavior resolve in this order:
+Ready-work filters resolve in this order:
 
 1. Explicit command flags
 2. Repo-local project defaults in `.af/config`
@@ -253,14 +235,9 @@ Loop and ready behavior resolve in this order:
 
 Built-in defaults:
 
-- loop harness: `opencode`
-- loop model: harness-specific
-- loop timelog: `false`
 - ready ignore-tags: `#deferred,#blocked`
 
-The same ignore-tags setting is used by `af ready`, `af priority`, and `af loop`.
-
-Explicit and configured loop models must be provider-qualified, for example `openai/gpt-5.5` or `openai-codex/gpt-5.4`.
+The same ignore-tags setting is used by `af ready` and `af priority`.
 
 ### Non-interactive auth
 
@@ -298,66 +275,6 @@ What these do:
 - `assign --me`: claim the task for the current user.
 - `update --log "..."`: append an Agent Log entry to the task description. This is the durable operational trail for agents.
 - `complete`: mark the task complete in AmpliFlow.
-
-### Loop automation
-
-`af loop` is an operator-supervised dispatcher for ready tasks. It requires a bound project, claims the first ready task, launches the selected coding harness, and keeps that claimed task active across retries until it is completed or blocked.
-
-```bash
-af context project <project-ref>
-af loop
-
-# Append task-linked timesheet entries for completed loop runs
-af loop --timelog
-
-# Restrict the queue to tasks with a specific tag
-af project <project-ref> task <task-ref> tag add loop
-af ready --tag loop
-af loop --tag loop
-
-# Override the configured harness or model for one run
-af loop --harness opencode
-af loop --harness claude
-af loop --harness pi
-af loop --model openai/gpt-5.5
-
-# Run one queue pass, then exit
-af loop --once
-
-# Add local operator guidance for the next run
-af loop steer "rerun the focused loop tests"
-
-# Follow the operator log
-af loop tail
-af loop logs --lines 500
-af loop logs --level warning
-```
-
-What these do:
-
-- `af loop`: start the persistent task loop for the bound project.
-- `af loop --timelog`: measure agent runtime per task and record it to task-linked timesheet entries when the run reaches a terminal state.
-- `task ... tag add loop`: put one task into a tag-gated automation lane.
-- `af ready --tag loop`: preview the exact tagged ready queue before starting automation.
-- `af loop --tag loop`: run the loop only against tasks carrying that tag.
-- `af loop --harness ...`: choose which coding harness should run tasks in this process.
-- `af loop --model ...`: choose the provider-qualified model for this process.
-- `af loop --once`: drain the current ready queue once, then exit.
-- `af loop steer "..."`: write a local operator note that will be injected into the next matching loop prompt.
-- `af loop tail`: follow the stable loop session log.
-- `af loop logs --lines 500`: start the tail with a larger visible backlog.
-- `af loop logs --level warning`: hide normal info chatter and show warnings and errors only.
-
-If you are integrating a custom loop-driven agent flow, the spawned agent is expected to finish with one final outcome marker line such as:
-
-- `AF_LOOP_OUTCOME: COMPLETE <reason>`
-- `AF_LOOP_OUTCOME: CONTINUE <reason>`
-- `AF_LOOP_OUTCOME: BLOCKED <reason>`
-- `AF_LOOP_OUTCOME: REPLAN <reason>`
-
-Agents inside a loop should not start nested loops.
-
-More detail: [AF loop guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/AF-LOOP.md)
 
 ### Agent setup
 
@@ -434,7 +351,7 @@ A few choices shape the tool:
 - Short refs instead of UUIDs, so humans and agents can work with `af project 3 task 12`
 - AmpliFlow is the source of truth, while local SQLite stores cache, auth context, refs, and local task state
 - AI-written content is marked by default so draft machine output stays visible
-- Repo-local and machine-local defaults stay local, especially loop settings and ready-queue filters
+- Repo-local and machine-local defaults stay local, including ready-queue filters
 
 ## Responsible use
 
@@ -454,7 +371,6 @@ Agent-written AmpliFlow text is marked with an AI banner. Review it, rewrite it 
 - [af-cli Labs page](https://www.ampliflow.com/labs/af-cli/)
 - [Releases](https://github.com/AmpliFlow/af-cli/releases)
 - [Source repo and development docs](https://github.com/AmpliFlow/af-cli-dev)
-- [AF loop guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/AF-LOOP.md)
 - [MCP overview](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/MCP.md)
 - [MCP integration guide](https://github.com/AmpliFlow/af-cli-dev/blob/main/docs/mcp-integration-guide.md)
 
