@@ -26,7 +26,7 @@ AmpliFlow is the product behind this CLI. The platform is built to help growing 
 - Management-system records: browse and update risks, improvements, goals, pages, controls, legislation, customer requirements, training plans, environmental aspects, processes, custom lists, checklists, news, and history
 - Business records: work with suppliers, stakeholders, customers, and items
 - Search and reporting: search across records, inspect priorities, read ready work, and add task-linked timesheet entries
-- Agent setup and context: configure repo context, install shared agent guidance with `af setup`, and stamp AI git commits with `af git-identity -E`
+- Agent setup and context: configure repo context, install shared agent guidance with `af setup`, and attribute assisted commits with `af git-trailer`
 
 > [!IMPORTANT]
 > `af` uses your AmpliFlow permissions. Reads and writes are live. Start in a test tenant, use least privilege, and review AI-written content before you keep it.
@@ -241,9 +241,16 @@ The same ignore-tags setting is used by `af ready` and `af priority`.
 
 ### Non-interactive auth
 
-`af` also supports env-backed auth for scripts and non-interactive use with `AF_BASE_URL` and `AF_TOKEN`.
+Scripts use stored identities too. For an explicitly authorized unattended login, read the password from a regular, nonsymlink file with exact mode `0600`:
 
-In that mode, commands like `af auth status`, `af tenant active`, and `af config show` use the env-provided tenant context.
+```bash
+af auth login --tenant example.ampliflow.com --email operator@example.test --password-file /path/to/password
+af auth list
+af context auth <ref>
+af context
+```
+
+Choose the identity ref from `af auth list`. `--password-stdin` is an alternative to `--password-file`; never pass a password as an argument. `AF_BASE_URL` and `AF_TOKEN` are not normal CLI authentication inputs.
 
 ## Common workflows
 
@@ -296,13 +303,18 @@ What these do:
 
 `af setup` output is idempotent and can be re-run safely.
 
-When the agent will commit code, set the AI git identity first:
+Keep the configured human Git author and committer. Add the canonical af-cli co-author trailer when an agent helps with a commit:
 
 ```bash
-eval "$(af git-identity -E)"
+git -c trailer.separators=: \
+  -c trailer.af-cli.key=Co-authored-by \
+  -c trailer.af-cli.ifexists=addIfDifferent \
+  -c trailer.af-cli.ifmissing=add \
+  -c 'trailer.af-cli.cmd=af git-trailer value' \
+  commit --trailer af-cli -m "type(scope): description"
 ```
 
-- `af git-identity -E`: print shell exports that make AI-authored commits easy to distinguish in git history.
+The command-scoped settings add exactly one canonical trailer without changing Git identity or persistent configuration.
 
 ### Search and help
 
